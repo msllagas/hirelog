@@ -1,5 +1,5 @@
 import * as React from "react";
-import { House } from "lucide-react";
+import { Bookmark, BriefcaseBusiness, House } from "lucide-react";
 
 import { NavHeader, NavMain, NavUser } from "@/pages/dashboard/components";
 
@@ -18,14 +18,25 @@ const data = {
     email: "jdc@example.com",
     avatar: "",
   },
-  menu: [
-    {
-      name: "Home",
-      url: "/app",
-      icon: House,
-    },
-  ],
 };
+
+const menuItems = [
+  {
+    name: "Home",
+    url: "/app",
+    icon: House,
+  },
+  {
+    name: "Applications",
+    url: "/app/applications",
+    icon: BriefcaseBusiness,
+  },
+  {
+    name: "Saved Jobs",
+    url: "/app/saved-jobs",
+    icon: Bookmark,
+  }
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -34,7 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavHeader />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain menu={data.menu} />
+        <NavMain menu={menuItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
