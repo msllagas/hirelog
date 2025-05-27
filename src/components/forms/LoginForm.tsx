@@ -3,15 +3,40 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { NavLink } from "react-router";
-import { ComponentProps } from "react";
+import { NavLink, useNavigate } from "react-router";
+import { ChangeEvent, ComponentProps, FormEvent, useState } from "react";
+import { LoginCredentials } from "@/types/auth.ts";
+import { loginUser } from "@/api/auth.ts";
 
 export function LoginForm({ className, ...props }: ComponentProps<"div">) {
+  const navigate = useNavigate();
+  const [auth, setAuth] = useState<LoginCredentials>({
+    email: "",
+    password: "",
+  });
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    console.log('name', name, 'value', value);
+    setAuth((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    try {
+      await loginUser(auth)
+      navigate('/app');
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -23,9 +48,11 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="Enter your email"
                   required
+                  onChange={handleChange}
                 />
               </div>
               <div className="grid gap-3">
@@ -40,9 +67,11 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
                 </div>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="Enter password"
                   required
+                  onChange={handleChange}
                 />
               </div>
               <Button
