@@ -7,9 +7,11 @@ import { NavLink, useNavigate } from "react-router";
 import { ChangeEvent, ComponentProps, FormEvent, useState } from "react";
 import { LoginCredentials } from "@/types/auth.ts";
 import { loginUser } from "@/api/auth.ts";
+import { useAuth } from "@/contexts/auth.tsx";
 
 export function LoginForm({ className, ...props }: ComponentProps<"div">) {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [auth, setAuth] = useState<LoginCredentials>({
     email: "",
     password: "",
@@ -17,16 +19,15 @@ export function LoginForm({ className, ...props }: ComponentProps<"div">) {
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    console.log('name', name, 'value', value);
     setAuth((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      await loginUser(auth)
-      navigate('/app');
-
+      const user = await loginUser(auth);
+      setUser(user);
+      navigate("/app");
     } catch (error) {
       console.log(error);
     }
