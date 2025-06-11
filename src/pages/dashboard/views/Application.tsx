@@ -1,7 +1,8 @@
 import { useSearchParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JobApplicationResponse } from "@/types/job.ts";
-import { index } from "@/api/job.ts";
+import { index, destroy } from "@/api/job.ts";
+import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -40,6 +41,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 function Application() {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const totalPages = 5;
@@ -60,6 +62,12 @@ function Application() {
     setSearchParams({ page: page.toString() });
   }
 
+  async function handleDelete(id: number) {
+    await destroy(id);
+    await queryClient.invalidateQueries({ queryKey: ["jobs", page] });
+    toast.success(`Job application successfully deleted!`);
+  }
+
   const statusStyles: Record<string, string> = {
     Pending: "bg-yellow-100 text-yellow-800",
     "In Review": "bg-blue-100 text-blue-800",
@@ -76,9 +84,7 @@ function Application() {
       {isPending && (
         <div className="font-inter grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 10 }).map((_, i) => (
-            <>
-              <Skeleton key={i} className="h-[250px] w-full self-stretch" />
-            </>
+            <Skeleton key={i} className="h-[250px] w-full self-stretch" />
           ))}
         </div>
       )}
@@ -154,7 +160,11 @@ function Application() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" className="cursor-pointer">
+                        <Button
+                          variant="ghost"
+                          className="cursor-pointer"
+                          onClick={() => handleDelete(job.id)}
+                        >
                           <Trash2 className="text-destructive" />
                         </Button>
                       </TooltipTrigger>
