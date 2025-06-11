@@ -15,6 +15,6 @@ export async function update() {
   // todo -> implement update
 }
 
-export async function  destroy() {
-  // todo -> implement delete/destroy
+export async function  destroy(jobApplicationID: number) {
+  return await axios.delete(`${API_ENDPOINT}/${jobApplicationID}`);
 }
