@@ -64,7 +64,11 @@ function Application() {
 
   async function handleDelete(id: number) {
     await destroy(id);
-    await queryClient.invalidateQueries({ queryKey: ["jobs", page] });
+    await queryClient.invalidateQueries({
+      queryKey: ["jobs"],
+      predicate: (query) =>
+        query.queryKey[0] === "jobs" && typeof query.queryKey[1] === "number",
+    });
     toast.success(`Job application successfully deleted!`);
   }
 
