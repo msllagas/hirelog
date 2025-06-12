@@ -39,6 +39,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useEffect } from "react";
 
 function Application() {
   const queryClient = useQueryClient();
@@ -46,7 +47,7 @@ function Application() {
   const page = Number(searchParams.get("page")) || 1;
   const totalPages = 5;
 
-  const { isPending, isError, data, error } = useQuery({
+  const { isPending, isError, data, error, isSuccess } = useQuery({
     queryKey: ["jobs", page],
     queryFn: async () => {
       const r = await index(`page=${page}`);
@@ -56,6 +57,12 @@ function Application() {
     retry: false,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (isSuccess && !isPending) {
+      window.scrollTo(0, 0);
+    }
+  }, [page, isSuccess, isPending]);
 
   function goToPage(page: number) {
     if (page < 1 || page > totalPages) return;
@@ -87,7 +94,7 @@ function Application() {
 
       {isPending && (
         <div className="font-inter grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 10 }).map((_, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <Skeleton key={i} className="h-[250px] w-full self-stretch" />
           ))}
         </div>
