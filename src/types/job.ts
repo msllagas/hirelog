@@ -22,4 +22,5 @@ export type JobApplicationResponse = {
     id: number;
     name: string;
   };
+  is_saved: boolean;
 };

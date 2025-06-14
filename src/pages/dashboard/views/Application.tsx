@@ -128,10 +128,12 @@ function Application() {
                                 variant="ghost"
                                 className="cursor-pointer text-amber-500 hover:text-amber-600"
                               >
-                                <Bookmark />
+                                <Bookmark
+                                  {...(job.is_saved ? { fill: "#d97706" } : {})}
+                                />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Save</TooltipContent>
+                            <TooltipContent>{ job.is_saved ? 'Unsave' : 'Save'}</TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
