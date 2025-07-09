@@ -39,13 +39,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function Application() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
   const totalPages = 5;
+  const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
 
   const { isPending, isError, data, error, isSuccess } = useQuery({
     queryKey: ["jobs", page],
@@ -70,13 +71,28 @@ function Application() {
   }
 
   async function handleDelete(id: number) {
-    await destroy(id);
-    await queryClient.invalidateQueries({
-      queryKey: ["jobs"],
-      predicate: (query) =>
-        query.queryKey[0] === "jobs" && typeof query.queryKey[1] === "number",
-    });
-    toast.success(`Job application successfully deleted!`);
+    if (deletingIds.has(id)) return;
+
+    setDeletingIds((prev) => new Set(prev).add(id));
+
+    try {
+      await destroy(id);
+      await queryClient.invalidateQueries({
+        queryKey: ["jobs"],
+        predicate: (query) =>
+          query.queryKey[0] === "jobs" && typeof query.queryKey[1] === "number",
+      });
+      toast.success(`Job application successfully deleted!`);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Something went wrong while deleting the job.");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   }
 
   const statusStyles: Record<string, string> = {
@@ -133,7 +149,9 @@ function Application() {
                                 />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>{ job.is_saved ? 'Unsave' : 'Save'}</TooltipContent>
+                            <TooltipContent>
+                              {job.is_saved ? "Unsave" : "Save"}
+                            </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       </div>
@@ -177,6 +195,7 @@ function Application() {
                           variant="ghost"
                           className="cursor-pointer"
                           onClick={() => handleDelete(job.id)}
+                          disabled={deletingIds.has(job.id)}
                         >
                           <Trash2 className="text-destructive" />
                         </Button>
