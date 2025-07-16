@@ -1,6 +1,5 @@
 export type JobApplicationRequest = {
   id: number;
-  user_id: number;
   job_type_id: number;
   company_name: string;
   position: string;
