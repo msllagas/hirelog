@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JobApplicationResponse } from "@/types/job.ts";
 import { index, destroy } from "@/api/job.ts";
+import { create as createSaveJob } from "@/api/savedJob.ts";
 import { toast } from "sonner";
 import {
   Pagination,
@@ -47,6 +48,7 @@ function Application() {
   const page = Number(searchParams.get("page")) || 1;
   const totalPages = 5;
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
+  const [savedJobs, setSavedJobs] = useState<Set<number>>(new Set());
 
   const { isPending, isError, data, error, isSuccess } = useQuery({
     queryKey: ["jobs", page],
@@ -92,6 +94,17 @@ function Application() {
         newSet.delete(id);
         return newSet;
       });
+    }
+  }
+
+  async function handleSaveJob(id: number) {
+    const response = await createSaveJob({
+      job_application_id: id
+    });
+
+    if (response.status === 201) {
+      toast.success("Job saved successfully!");
+      setSavedJobs(prev => new Set(prev).add(id));
     }
   }
 
@@ -143,9 +156,10 @@ function Application() {
                               <Button
                                 variant="ghost"
                                 className="cursor-pointer text-amber-500 hover:text-amber-600"
+                                onClick={() => handleSaveJob(job.id)}
                               >
                                 <Bookmark
-                                  {...(job.is_saved ? { fill: "#d97706" } : {})}
+                                  {...(job.is_saved || savedJobs.has(job.id) ? { fill: "#d97706" } : {})}
                                 />
                               </Button>
                             </TooltipTrigger>
