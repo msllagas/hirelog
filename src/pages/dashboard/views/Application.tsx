@@ -119,7 +119,7 @@ function Application() {
   };
   return (
     <>
-      <h1>Job Application List</h1>
+      <h1 className="mx-2 mt-4 text-xl font-medium">Job Applications</h1>
 
       {isPending && (
         <div className="font-inter grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
