@@ -1,4 +1,5 @@
 import axios from "@/config/axios";
+import { JobApplicationRequest } from "@/types/job.ts";
 
 const API_ENDPOINT = "/job-applications";
 
@@ -7,8 +8,10 @@ export async function index( queryString: string | null = null) {
   return await axios.get(url);
 }
 
-export async function create() {
-  // todo -> implement create
+export async function create(payload: JobApplicationRequest) {
+
+  return axios.post(API_ENDPOINT, payload)
+
 }
 
 export async function update() {
