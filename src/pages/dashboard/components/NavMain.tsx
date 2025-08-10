@@ -27,7 +27,7 @@ export function NavMain({
           >
             <NavLink end to="/app/add-job">
               <PlusCircleIcon />
-              <span>Add Job</span>
+              <span>New Application</span>
             </NavLink>
           </SidebarMenuButton>
         </SidebarMenuItem>

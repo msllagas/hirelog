@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router";
+import { NavLink, useSearchParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { JobApplicationResponse } from "@/types/job.ts";
 import { index, destroy } from "@/api/job.ts";
@@ -99,12 +99,12 @@ function Application() {
 
   async function handleSaveJob(id: number) {
     const response = await createSaveJob({
-      job_application_id: id
+      job_application_id: id,
     });
 
     if (response.status === 201) {
       toast.success("Job saved successfully!");
-      setSavedJobs(prev => new Set(prev).add(id));
+      setSavedJobs((prev) => new Set(prev).add(id));
     }
   }
 
@@ -131,7 +131,14 @@ function Application() {
       {isError && <p>An error occurred. {error?.message}</p>}
 
       {!isPending && !isError && data && data.length === 0 && (
-        <p>No job applications yet.</p>
+        <div className="flex h-full flex-col items-center justify-center space-y-2 text-center">
+          <p className="text-lg">No job applications yet</p>
+          <Button asChild>
+            <NavLink end to="/app/add-job">
+              Add Application
+            </NavLink>
+          </Button>
+        </div>
       )}
       {!isPending && !isError && (
         <div className="font-inter grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
@@ -159,7 +166,9 @@ function Application() {
                                 onClick={() => handleSaveJob(job.id)}
                               >
                                 <Bookmark
-                                  {...(job.is_saved || savedJobs.has(job.id) ? { fill: "#d97706" } : {})}
+                                  {...(job.is_saved || savedJobs.has(job.id)
+                                    ? { fill: "#d97706" }
+                                    : {})}
                                 />
                               </Button>
                             </TooltipTrigger>
@@ -223,62 +232,64 @@ function Application() {
           ))}
         </div>
       )}
-      <div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href={`?page=${page - 1}`}
-                onClick={(e) => {
-                  if (page <= 1) {
-                    e.preventDefault(); // Stop navigation
-                    return;
-                  }
-                  e.preventDefault();
-                  goToPage(page - 1);
-                }}
-                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {[...Array(totalPages)].map((_, i) => {
-              const p = i + 1;
-              return (
-                <PaginationItem key={p}>
-                  <PaginationLink
-                    href="#"
-                    isActive={p === page}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      goToPage(p);
-                    }}
-                  >
-                    {p}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            })}
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                href={`?page=${page + 1}`}
-                onClick={(e) => {
-                  if (page >= totalPages) {
+      {data?.length > 0 && (
+        <div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href={`?page=${page - 1}`}
+                  onClick={(e) => {
+                    if (page <= 1) {
+                      e.preventDefault(); // Stop navigation
+                      return;
+                    }
                     e.preventDefault();
-                    return;
+                    goToPage(page - 1);
+                  }}
+                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {[...Array(totalPages)].map((_, i) => {
+                const p = i + 1;
+                return (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      href="#"
+                      isActive={p === page}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        goToPage(p);
+                      }}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href={`?page=${page + 1}`}
+                  onClick={(e) => {
+                    if (page >= totalPages) {
+                      e.preventDefault();
+                      return;
+                    }
+                    e.preventDefault();
+                    goToPage(page + 1);
+                  }}
+                  className={
+                    page >= totalPages ? "pointer-events-none opacity-50" : ""
                   }
-                  e.preventDefault();
-                  goToPage(page + 1);
-                }}
-                className={
-                  page >= totalPages ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </>
   );
 }
