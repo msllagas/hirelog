@@ -7,7 +7,7 @@ export const jobApplicationSchema = z.object({
   location: z.string().nullable().optional(),
   job_type_id: z.number(),
   application_status_id: z.number(),
-  application_url: z.string().nullable().optional(),
+  application_url: z.url().nullable().optional(),
   description: z.string().nullable().optional(),
 });
 
