@@ -35,8 +35,12 @@ import { cn } from "@/lib/utils.ts";
 import { JobTypeResponse } from "@/types/jobType.ts";
 import { ApplicationStatusResponse } from "@/types/applicationStatus.ts";
 import { create } from "@/api/job.ts";
+import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 export function AddJobForm() {
+  const navigate = useNavigate();
+
   const { data: jobTypes } = useQuery({
     queryKey: ["job-type"],
     queryFn: async () => {
@@ -77,7 +81,12 @@ export function AddJobForm() {
   async function onSubmit(values: z.infer<typeof jobApplicationSchema>) {
 
     const response = await create(values);
-    console.log(response);
+
+    if (response.status === 201) {
+      toast.success("Job application created successfully!");
+
+      navigate("/app/applications");
+    }
   }
 
   return (
