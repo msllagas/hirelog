@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -46,7 +45,7 @@ function Application() {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
-  const totalPages = 5;
+  let totalPages = 0;
   const [deletingIds, setDeletingIds] = useState<Set<number>>(new Set());
   const [savedJobs, setSavedJobs] = useState<Set<number>>(new Set());
 
@@ -54,7 +53,7 @@ function Application() {
     queryKey: ["jobs", page],
     queryFn: async () => {
       const r = await index(`page=${page}`);
-      return r.data.data;
+      return r.data;
     },
     staleTime: 1000 * 60 * 5,
     retry: false,
@@ -117,6 +116,26 @@ function Application() {
     Rejected: "bg-red-100 text-red-800",
     Withdrawn: "bg-gray-100 text-gray-800",
   };
+
+
+  totalPages = data?.meta?.last_page;
+  const windowSize = 5;
+
+  let start = page - 2;
+  let end = page + 2;
+
+  if (start < 1) {
+    start = 1;
+    end = windowSize;
+  }
+  if (end > totalPages) {
+    end = totalPages;
+    start = totalPages - windowSize + 1;
+  }
+  if (start < 1) start = 1;
+
+  const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
+
   return (
     <>
       <h1 className="mx-2 mt-4 text-xl font-medium">Job Applications</h1>
@@ -130,7 +149,7 @@ function Application() {
       )}
       {isError && <p>An error occurred. {error?.message}</p>}
 
-      {!isPending && !isError && data && data.length === 0 && (
+      {!isPending && !isError && data?.data && data?.data?.length === 0 && (
         <div className="flex h-full flex-col items-center justify-center space-y-2 text-center">
           <p className="text-lg">No job applications yet</p>
           <Button asChild>
@@ -142,7 +161,7 @@ function Application() {
       )}
       {!isPending && !isError && (
         <div className="font-inter grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
-          {data?.map((job: JobApplicationResponse) => (
+          {data?.data?.map((job: JobApplicationResponse) => (
             <Card key={job.id} className="self-stretch">
               <CardHeader>
                 <CardTitle>
@@ -232,59 +251,60 @@ function Application() {
           ))}
         </div>
       )}
-      {data?.length > 0 && (
+      {data?.data?.length > 0 && (
         <div>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious
-                  href={`?page=${page - 1}`}
-                  onClick={(e) => {
-                    if (page <= 1) {
-                      e.preventDefault(); // Stop navigation
-                      return;
-                    }
-                    e.preventDefault();
-                    goToPage(page - 1);
-                  }}
-                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {[...Array(totalPages)].map((_, i) => {
-                const p = i + 1;
-                return (
-                  <PaginationItem key={p}>
-                    <PaginationLink
-                      href="#"
-                      isActive={p === page}
-                      onClick={(e) => {
+                {totalPages > 1 && (
+                  <PaginationPrevious
+                    href={`?page=${page - 1}`}
+                    onClick={(e) => {
+                      if (page <= 1) {
                         e.preventDefault();
-                        goToPage(p);
-                      }}
-                    >
-                      {p}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext
-                  href={`?page=${page + 1}`}
-                  onClick={(e) => {
-                    if (page >= totalPages) {
+                        return;
+                      }
                       e.preventDefault();
-                      return;
+                      goToPage(page - 1);
+                    }}
+                    className={
+                      page <= 1 ? "pointer-events-none opacity-50" : ""
                     }
-                    e.preventDefault();
-                    goToPage(page + 1);
-                  }}
-                  className={
-                    page >= totalPages ? "pointer-events-none opacity-50" : ""
-                  }
-                />
+                  />
+                )}
+              </PaginationItem>
+              {pages.map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    href="#"
+                    isActive={p === page}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToPage(p);
+                    }}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                {totalPages > 1 && (
+                  <PaginationNext
+                    href={`?page=${page + 1}`}
+                    onClick={(e) => {
+                      if (page >= totalPages) {
+                        e.preventDefault();
+                        return;
+                      }
+                      e.preventDefault();
+                      goToPage(page + 1);
+                    }}
+                    className={
+                      page >= totalPages ? "pointer-events-none opacity-50" : ""
+                    }
+                  />
+                )}
               </PaginationItem>
             </PaginationContent>
           </Pagination>
