@@ -11,7 +11,10 @@ export const jobApplicationSchema = z.object({
   description: z.string().nullable().optional(),
 });
 
-export type JobApplicationRequest = z.infer<typeof jobApplicationSchema>;
+export type JobApplicationRequest = Omit<z.infer<typeof jobApplicationSchema>, "applied_date"> & {
+  applied_date: string;
+};
+
 
 export type JobApplicationResponse = {
   id: number;

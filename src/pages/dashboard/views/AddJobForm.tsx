@@ -80,7 +80,10 @@ export function AddJobForm() {
 
   async function onSubmit(values: z.infer<typeof jobApplicationSchema>) {
 
-    const response = await create(values);
+    const response = await create({
+      ...values,
+      applied_date: values.applied_date.toISOString().split('T')[0]
+    });
 
     if (response.status === 201) {
       toast.success("Job application created successfully!");
